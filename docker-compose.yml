@@ -1,0 +1,31 @@
+version: '3'
+
+services:
+  app:
+    build: ./
+    restart: always
+    environment:
+      PORT: 80
+      BOT_NAME:
+      BOT_UUID:
+      VERIFICATION_TOKEN:
+      ACCESS_TOKEN:
+      MARIADB_HOSTNAME: mysql
+      MARIADB_DATABASE: extreme
+      MARIADB_USERNAME: root
+      MARIADB_PASSWORD: password
+    ports:
+      - 80:80
+  mysql:
+    image: mariadb:10.4.10
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: extreme
+    expose:
+      - 3306
+    ports:
+      - 3306:3306
+    volumes:
+      - ./mysql/data:/var/lib/mysql
+      - ./mysql/init:/docker-entrypoint-initdb.d

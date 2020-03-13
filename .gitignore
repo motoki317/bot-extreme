@@ -1,0 +1,8 @@
+.idea/
+
+.env
+
+app
+bot-extreme
+
+mysql/data/
