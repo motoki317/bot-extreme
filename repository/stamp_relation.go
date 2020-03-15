@@ -12,10 +12,14 @@ type StampRelationRepository interface {
 	// fromとtoが入れ替わる場合があります
 	// 存在しない場合はnilを返します
 	GetStampRelation(from, to string) (*StampRelation, error)
-	// スタンプIDの関係を全て取得します
+	// スタンプIDの関係を全て、id_fromとid_toのどちらかに含まれる関係を全て取得します
 	GetStampRelations(id string) ([]*StampRelation, error)
 	// スタンプの関係を更新します
 	// 存在する場合は更新
 	// 存在しない場合は新規に作成します
 	UpdateStampRelation(relation *StampRelation) error
+	// スタンプの関係を全て更新します
+	// 存在する場合は更新
+	// 存在しない場合は新規に作成します
+	UpdateStampRelations(relations []*StampRelation) error
 }

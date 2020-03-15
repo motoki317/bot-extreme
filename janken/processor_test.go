@@ -9,6 +9,10 @@ import (
 type MockRepository struct {
 }
 
+func (m MockRepository) Lock() {}
+
+func (m MockRepository) Unlock() {}
+
 func (m MockRepository) GetRating(ID string) (*repository.Rating, error) {
 	return &repository.Rating{
 		ID:     ID,
@@ -48,6 +52,14 @@ func (m MockRepository) GetStampRelations(id string) ([]*repository.StampRelatio
 }
 
 func (m MockRepository) UpdateStampRelation(relation *repository.StampRelation) error {
+	return nil
+}
+
+func (m MockRepository) UpdateStampRelations(relations []*repository.StampRelation) error {
+	return nil
+}
+
+func (m MockRepository) UpdateAllEffectPoints(points []*repository.EffectPoint) error {
 	return nil
 }
 

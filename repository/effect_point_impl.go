@@ -1,5 +1,9 @@
 package repository
 
+import (
+	"strings"
+)
+
 func (r *RepositoryImpl) GetEffectPoint(name string) (*EffectPoint, error) {
 	var effectPoint EffectPoint
 	if err := r.db.Get(&effectPoint, "SELECT * FROM `effect_point` WHERE `name` = ?", name); err != nil {
@@ -22,6 +26,23 @@ func (r *RepositoryImpl) GetAllEffectPoints() ([]*EffectPoint, error) {
 }
 
 func (r *RepositoryImpl) UpdateEffectPoint(point *EffectPoint) error {
-	_, err := r.db.NamedExec("INSERT INTO `effect_point` (name, point) VALUES (:name, :point) ON DUPLICATE KEY UPDATE point = :point", point)
+	_, err := r.db.NamedExec("INSERT INTO `effect_point` (name, point) VALUES (:name, :point) ON DUPLICATE KEY UPDATE point = VALUES(point)", point)
+	return err
+}
+
+func (r *RepositoryImpl) UpdateAllEffectPoints(points []*EffectPoint) error {
+	placeHolders := make([]string, 0, len(points))
+	for range points {
+		placeHolders = append(placeHolders, "(?, ?)")
+	}
+	placeHolder := strings.Join(placeHolders, ", ")
+
+	values := make([]interface{}, 0, len(points)*2)
+	for _, p := range points {
+		values = append(values, p.Name)
+		values = append(values, p.Point)
+	}
+
+	_, err := r.db.Exec("INSERT INTO `effect_point` (name, point) VALUES "+placeHolder+" ON DUPLICATE KEY UPDATE point = VALUES(point)", values...)
 	return err
 }

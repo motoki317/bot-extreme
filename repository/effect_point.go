@@ -15,4 +15,8 @@ type EffectPointRepository interface {
 	// 存在しない場合は新規に作成、
 	// 既に存在する場合は更新します。
 	UpdateEffectPoint(point *EffectPoint) error
+	// 全てのエフェクトのポイントを更新します
+	// 存在しない場合は新規に作成、
+	// 既に存在する場合は更新します。
+	UpdateAllEffectPoints(points []*EffectPoint) error
 }

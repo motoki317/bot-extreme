@@ -5,36 +5,44 @@ import (
 	"testing"
 )
 
-type MockRepository struct {
-}
+// なにもないrepository
+type EmptyRepository struct{}
 
-func (m MockRepository) GetRating(ID string) (*repository.Rating, error) {
+func (m EmptyRepository) Lock() {}
+
+func (m EmptyRepository) Unlock() {}
+
+func (m EmptyRepository) GetRating(ID string) (*repository.Rating, error) {
 	return &repository.Rating{
 		ID:     ID,
 		Rating: 1500,
 	}, nil
 }
 
-func (m MockRepository) UpdateRating(*repository.Rating) error {
+func (m EmptyRepository) UpdateRating(*repository.Rating) error {
 	return nil
 }
 
-func (m MockRepository) GetEffectPoint(name string) (*repository.EffectPoint, error) {
+func (m EmptyRepository) GetEffectPoint(name string) (*repository.EffectPoint, error) {
 	return &repository.EffectPoint{
 		Name:  name,
 		Point: 1,
 	}, nil
 }
 
-func (m MockRepository) GetAllEffectPoints() ([]*repository.EffectPoint, error) {
+func (m EmptyRepository) GetAllEffectPoints() ([]*repository.EffectPoint, error) {
 	return []*repository.EffectPoint{}, nil
 }
 
-func (m MockRepository) UpdateEffectPoint(point *repository.EffectPoint) error {
+func (m EmptyRepository) UpdateEffectPoint(point *repository.EffectPoint) error {
 	return nil
 }
 
-func (m MockRepository) GetStampRelation(from, to string) (*repository.StampRelation, error) {
+func (m EmptyRepository) UpdateAllEffectPoints(points []*repository.EffectPoint) error {
+	return nil
+}
+
+func (m EmptyRepository) GetStampRelation(from, to string) (*repository.StampRelation, error) {
 	return &repository.StampRelation{
 		IDFrom: from,
 		IDTo:   to,
@@ -42,30 +50,34 @@ func (m MockRepository) GetStampRelation(from, to string) (*repository.StampRela
 	}, nil
 }
 
-func (m MockRepository) GetStampRelations(id string) ([]*repository.StampRelation, error) {
+func (m EmptyRepository) GetStampRelations(id string) ([]*repository.StampRelation, error) {
 	return []*repository.StampRelation{}, nil
 }
 
-func (m MockRepository) UpdateStampRelation(relation *repository.StampRelation) error {
+func (m EmptyRepository) UpdateStampRelation(relation *repository.StampRelation) error {
 	return nil
 }
 
-func (m MockRepository) GetStamp(ID string) (*repository.Stamp, error) {
+func (m EmptyRepository) UpdateStampRelations(relations []*repository.StampRelation) error {
+	return nil
+}
+
+func (m EmptyRepository) GetStamp(ID string) (*repository.Stamp, error) {
 	return &repository.Stamp{
 		ID:   ID,
 		Used: 5,
 	}, nil
 }
 
-func (m MockRepository) UpdateStamp(stamp *repository.Stamp) error {
+func (m EmptyRepository) UpdateStamp(stamp *repository.Stamp) error {
 	return nil
 }
 
-func (m MockRepository) GetSeenChannel(ID string) (*repository.SeenChannel, error) {
+func (m EmptyRepository) GetSeenChannel(ID string) (*repository.SeenChannel, error) {
 	return nil, nil
 }
 
-func (m MockRepository) UpdateSeenChannel(channel *repository.SeenChannel) error {
+func (m EmptyRepository) UpdateSeenChannel(channel *repository.SeenChannel) error {
 	return nil
 }
 
@@ -82,7 +94,7 @@ func TestMessage(t *testing.T) {
 		{
 			name: "parrot",
 			args: args{
-				repo:    MockRepository{},
+				repo:    EmptyRepository{},
 				content: ":ultrafastparrot.ex-large.rotate.parrot:",
 			},
 			wantErr: false,
@@ -90,7 +102,7 @@ func TestMessage(t *testing.T) {
 		{
 			name: "thonk_spin",
 			args: args{
-				repo:    MockRepository{},
+				repo:    EmptyRepository{},
 				content: ":thonk_spin.ex-large.rotate.parrot:",
 			},
 			wantErr: false,
@@ -98,7 +110,7 @@ func TestMessage(t *testing.T) {
 		{
 			name: "multi",
 			args: args{
-				repo:    MockRepository{},
+				repo:    EmptyRepository{},
 				content: ":ranpuro_5::oisu-4yoko::ranpuro_1::ranpuro_3::ranpuro_4::ranpuro_2::ranpuro_4::ranpuro_2:",
 			},
 			wantErr: false,

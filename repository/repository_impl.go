@@ -1,14 +1,26 @@
 package repository
 
-import "github.com/jmoiron/sqlx"
+import (
+	"github.com/jmoiron/sqlx"
+	"sync"
+)
 
 // Repository実装
 type RepositoryImpl struct {
-	db *sqlx.DB
+	db   *sqlx.DB
+	lock sync.Mutex
 }
 
 func NewRepositoryImpl(db *sqlx.DB) Repository {
 	return &RepositoryImpl{
 		db: db,
 	}
+}
+
+func (r *RepositoryImpl) Lock() {
+	r.lock.Lock()
+}
+
+func (r *RepositoryImpl) Unlock() {
+	r.lock.Unlock()
 }

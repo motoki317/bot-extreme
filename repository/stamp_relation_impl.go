@@ -1,6 +1,9 @@
 package repository
 
-import "database/sql"
+import (
+	"database/sql"
+	"strings"
+)
 
 func (r *RepositoryImpl) GetStampRelation(from, to string) (*StampRelation, error) {
 	var relation StampRelation
@@ -42,5 +45,23 @@ func (r *RepositoryImpl) GetStampRelations(id string) (relations []*StampRelatio
 
 func (r *RepositoryImpl) UpdateStampRelation(relation *StampRelation) error {
 	_, err := r.db.NamedExec("INSERT INTO `stamp_relation` (id_from, id_to, point) VALUES (:id_from, :id_to, :point) ON DUPLICATE KEY UPDATE point = :point", relation)
+	return err
+}
+
+func (r *RepositoryImpl) UpdateStampRelations(relations []*StampRelation) error {
+	placeHolders := make([]string, 0, len(relations))
+	for range relations {
+		placeHolders = append(placeHolders, "(?, ?, ?)")
+	}
+	placeHolder := strings.Join(placeHolders, ", ")
+
+	values := make([]interface{}, 0, len(relations)*2)
+	for _, r := range relations {
+		values = append(values, r.IDFrom)
+		values = append(values, r.IDTo)
+		values = append(values, r.Point)
+	}
+
+	_, err := r.db.Exec("INSERT INTO `stamp_relation` (id_from, id_to, point) VALUES "+placeHolder+" ON DUPLICATE KEY UPDATE point = VALUES(point)", values...)
 	return err
 }
