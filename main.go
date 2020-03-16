@@ -31,7 +31,7 @@ func main() {
 
 	// connect to db
 	db := sqlx.MustConnect("mysql", fmt.Sprintf(
-		"%s:%s@tcp(%s:3306)/%s",
+		"%s:%s@tcp(%s:3306)/%s?parseTime=true",
 		os.Getenv("MARIADB_USERNAME"),
 		os.Getenv("MARIADB_PASSWORD"),
 		os.Getenv("MARIADB_HOSTNAME"),
@@ -39,7 +39,7 @@ func main() {
 	))
 	// db connection for batch executing, allowing multi statements
 	dbForBatch := sqlx.MustConnect("mysql", fmt.Sprintf(
-		"%s:%s@tcp(%s:3306)/%s?multiStatements=true",
+		"%s:%s@tcp(%s:3306)/%s?multiStatements=true&parseTime=true",
 		os.Getenv("MARIADB_USERNAME"),
 		os.Getenv("MARIADB_PASSWORD"),
 		os.Getenv("MARIADB_HOSTNAME"),
