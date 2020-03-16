@@ -5,7 +5,7 @@ import (
 	"github.com/motoki317/bot-extreme/api"
 	"github.com/motoki317/bot-extreme/janken"
 	"github.com/motoki317/bot-extreme/repository"
-	bot "github.com/traPtitech/traq-bot"
+	bot "github.com/motoki317/traq-bot"
 	"log"
 	"os"
 )

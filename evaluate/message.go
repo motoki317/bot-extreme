@@ -73,6 +73,11 @@ func init() {
 	stampsMap = make(map[string]string)
 }
 
+// stampsMapに新しいスタンプを追加します
+func AddStamp(stampName, stampID string) {
+	stampsMap[stampName] = stampID
+}
+
 // じゃんけんの手を評価し、点数を返します。
 func MessagePoint(repo repository.Repository, content string) (pts float64, err error) {
 	// parse stamps

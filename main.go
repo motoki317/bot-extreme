@@ -4,9 +4,10 @@ import (
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
+	"github.com/motoki317/bot-extreme/evaluate"
 	"github.com/motoki317/bot-extreme/handler"
 	"github.com/motoki317/bot-extreme/repository"
-	bot "github.com/traPtitech/traq-bot"
+	bot "github.com/motoki317/traq-bot"
 	"io/ioutil"
 	"log"
 	"os"
@@ -73,6 +74,9 @@ func main() {
 	// traq bot handlers
 	handlers := bot.EventHandlers{}
 	handlers.SetMessageCreatedHandler(handler.MessageReceived(repo))
+	handlers.SetStampCreatedHandler(func(payload *bot.StampCreatedPayload) {
+		evaluate.AddStamp(payload.Name, payload.ID)
+	})
 
 	// traq bot server
 	vt := os.Getenv("VERIFICATION_TOKEN")
