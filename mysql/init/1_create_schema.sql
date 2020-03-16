@@ -1,5 +1,3 @@
-USE `extreme`;
-
 CREATE TABLE IF NOT EXISTS `rating` (
     id CHAR(36) PRIMARY KEY,
     rating DOUBLE NOT NULL
