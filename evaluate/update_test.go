@@ -3,7 +3,6 @@ package evaluate
 import (
 	ast "github.com/magiconair/properties/assert"
 	"github.com/motoki317/bot-extreme/repository"
-	"log"
 	"math"
 	"sync"
 	"testing"
