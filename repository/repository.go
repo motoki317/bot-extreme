@@ -1,10 +1,9 @@
 package repository
 
-import "sync"
-
 type Repository interface {
 	// ポイント等更新用のロック
-	sync.Locker
+	Lock()
+	Unlock()
 	// ユーザーレーティング
 	RatingRepository
 	// スタンプエフェクトのポイント
@@ -13,6 +12,9 @@ type Repository interface {
 	StampRelationRepository
 	// スタンプ単体のポイント
 	StampRepository
+	// チャンネル更新用のロック
+	ChannelLock()
+	ChannelUnlock()
 	// 処理したチャンネルの保存用
 	SeenChannelRepository
 }

@@ -55,18 +55,39 @@ func getMessageStamps(content string) []*stamp {
 	}
 	stamps := make([]*stamp, 0, len(messageStamps))
 	for _, stampMessage := range messageStamps {
-		stamps = append(stamps, parseStamp(stampMessage[1]))
+		parsedStamp := parseStamp(stampMessage[1])
+		if parsedStamp != nil {
+			stamps = append(stamps, parsedStamp)
+		}
 	}
 	return stamps
 }
 
-// スタンプをパースします
+// スタンプをパースします。存在するスタンプであるかどうか、またエフェクトの有効性についてもvalidateします
 // e.g. "thonk_spin.ex-large.rotate.parrot" -> "thonk_spin", []string{"ex-large", "rotate", "parrot"}
 func parseStamp(stampMessage string) *stamp {
 	matches := strings.Split(stampMessage, ".")
 
 	ret := &stamp{
 		name: matches[0],
+	}
+
+	if len(stampsMap) == 0 {
+		err := reCacheStamps()
+		if err != nil {
+			log.Println(err)
+			return nil
+		}
+	}
+
+	stampsMapLock.RLock()
+	defer stampsMapLock.RUnlock()
+
+	// 存在するスタンプかチェック
+	if id, ok := stampsMap[ret.name]; ok {
+		ret.id = id
+	} else {
+		return nil
 	}
 
 	for _, eff := range matches[1:] {

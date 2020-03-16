@@ -5,7 +5,6 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
 	"github.com/motoki317/bot-extreme/handler"
-	"github.com/motoki317/bot-extreme/janken"
 	"github.com/motoki317/bot-extreme/repository"
 	bot "github.com/traPtitech/traq-bot"
 	"io/ioutil"
@@ -68,13 +67,12 @@ func main() {
 	}
 	log.Println("Successfully initialized DB schema!")
 
-	// repository impl and janken processor
+	// repository impl
 	repo := repository.NewRepositoryImpl(db)
-	processor := janken.NewProcessor(repo)
 
 	// traq bot handlers
 	handlers := bot.EventHandlers{}
-	handlers.SetMessageCreatedHandler(handler.MessageReceived(processor))
+	handlers.SetMessageCreatedHandler(handler.MessageReceived(repo))
 
 	// traq bot server
 	vt := os.Getenv("VERIFICATION_TOKEN")

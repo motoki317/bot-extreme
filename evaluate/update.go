@@ -2,6 +2,7 @@ package evaluate
 
 import (
 	"github.com/motoki317/bot-extreme/repository"
+	openapi "github.com/sapphi-red/go-traq"
 	"sort"
 )
 
@@ -12,25 +13,44 @@ const (
 )
 
 type reaction struct {
-	name string
-	id   string
+	// stamp ID
+	id string
 }
 
-type message struct {
-	messageStamps []*stamp
+type Message struct {
+	MessageStamps []*stamp
 	// users -> list of stamps
-	userReactions [][]*reaction
+	UserReactions [][]*reaction
+}
+
+func ParseMessage(message *openapi.Message) *Message {
+	userReactions := make(map[string][]*reaction)
+	for _, s := range message.StampList {
+		userReactions[s.UserId] = append(userReactions[s.UserId], &reaction{
+			id: s.StampId,
+		})
+	}
+
+	users := make([][]*reaction, 0, len(userReactions))
+	for _, reactions := range userReactions {
+		users = append(users, reactions)
+	}
+
+	return &Message{
+		MessageStamps: getMessageStamps(message.Content),
+		UserReactions: users,
+	}
 }
 
 // 更新用
 type updater struct {
 	repo    repository.Repository
-	message *message
+	message *Message
 }
 
 // 1つのメッセージについて処理し、スタンプの評価などを変更します
-func processMessage(repo repository.Repository, message *message) error {
-	if len(message.userReactions) == 0 && len(message.messageStamps) == 0 {
+func ProcessMessage(repo repository.Repository, message *Message) error {
+	if len(message.UserReactions) == 0 && len(message.MessageStamps) == 0 {
 		return nil
 	}
 
@@ -66,7 +86,7 @@ func (u *updater) updateStampsUsed() error {
 
 	// このメッセージの中でそれぞれのスタンプIDが何回使われたか
 	counts := make(map[string]int)
-	for _, s := range u.message.messageStamps {
+	for _, s := range u.message.MessageStamps {
 		count := 0
 		if _, ok := counts[s.id]; ok {
 			count = counts[s.id]
@@ -74,7 +94,7 @@ func (u *updater) updateStampsUsed() error {
 		count++
 		counts[s.id] = count
 	}
-	for _, userReaction := range u.message.userReactions {
+	for _, userReaction := range u.message.UserReactions {
 		for _, r := range userReaction {
 			count := 0
 			if _, ok := counts[r.id]; ok {
@@ -114,7 +134,7 @@ func (u *updater) updateStampEffects() error {
 	// このメッセージ内で使われた大きさと動きに関するエフェクトの数
 	sizeCounts := make(map[string]int)
 	moveCounts := make(map[string]int)
-	for _, s := range u.message.messageStamps {
+	for _, s := range u.message.MessageStamps {
 		if s.sizeEffect != "" {
 			count := 0
 			if _, ok := sizeCounts[s.sizeEffect]; ok {
@@ -221,10 +241,10 @@ func (u *updater) updateStampRelations() error {
 
 	// 使われたスタンプ
 	stampsUsed := make(map[string]bool)
-	for _, s := range u.message.messageStamps {
+	for _, s := range u.message.MessageStamps {
 		stampsUsed[s.id] = true
 	}
-	for _, userReaction := range u.message.userReactions {
+	for _, userReaction := range u.message.UserReactions {
 		for _, r := range userReaction {
 			stampsUsed[r.id] = true
 		}
@@ -253,12 +273,12 @@ func (u *updater) updateStampRelations() error {
 
 	// 更新
 	messageStampSet := make(map[string]bool)
-	for _, s := range u.message.messageStamps {
+	for _, s := range u.message.MessageStamps {
 		messageStampSet[s.id] = true
 	}
 	u.updateRelationForStampSet(messageStampSet, relations)
 
-	for _, userReaction := range u.message.userReactions {
+	for _, userReaction := range u.message.UserReactions {
 		stampSet := make(map[string]bool)
 		for _, r := range userReaction {
 			stampSet[r.id] = true

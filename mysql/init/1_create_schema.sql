@@ -25,5 +25,5 @@ CREATE TABLE IF NOT EXISTS `stamp` (
 
 CREATE TABLE IF NOT EXISTS `seen_channel` (
     id CHAR(36) PRIMARY KEY,
-    last_processed_message DATETIME
+    last_processed_message DATETIME(6)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

@@ -74,7 +74,7 @@ func init() {
 }
 
 // じゃんけんの手を評価し、点数を返します。
-func Message(repo repository.Repository, content string) (pts float64, err error) {
+func MessagePoint(repo repository.Repository, content string) (pts float64, err error) {
 	// parse stamps
 	stamps := getMessageStamps(content)
 

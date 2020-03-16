@@ -12,6 +12,10 @@ func (m EmptyRepository) Lock() {}
 
 func (m EmptyRepository) Unlock() {}
 
+func (m EmptyRepository) ChannelLock() {}
+
+func (m EmptyRepository) ChannelUnlock() {}
+
 func (m EmptyRepository) GetRating(ID string) (*repository.Rating, error) {
 	return &repository.Rating{
 		ID:     ID,
@@ -81,7 +85,7 @@ func (m EmptyRepository) UpdateSeenChannel(channel *repository.SeenChannel) erro
 	return nil
 }
 
-func TestMessage(t *testing.T) {
+func TestMessagePoint(t *testing.T) {
 	type args struct {
 		repo    repository.Repository
 		content string
@@ -118,13 +122,13 @@ func TestMessage(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotPts, err := Message(tt.args.repo, tt.args.content)
+			gotPts, err := MessagePoint(tt.args.repo, tt.args.content)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("Message() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("MessagePoint() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !(0 <= gotPts && gotPts < 65) {
-				t.Errorf("Message() gotPts = %v, want %v", gotPts, "0 <= pts < 65")
+				t.Errorf("MessagePoint() gotPts = %v, want %v", gotPts, "0 <= pts < 65")
 			}
 			t.Logf("Got %v pts for %s", gotPts, tt.args.content)
 		})

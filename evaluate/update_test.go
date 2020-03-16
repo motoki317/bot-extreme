@@ -3,27 +3,32 @@ package evaluate
 import (
 	ast "github.com/magiconair/properties/assert"
 	"github.com/motoki317/bot-extreme/repository"
+	"log"
 	"math"
 	"sync"
 	"testing"
+	"time"
 )
 
-// レーティング、スタンプの使用回数、エフェクト、関係を擬似的に保存するrepository
+// レーティング、スタンプの使用回数、エフェクト、関係、最後に見たチャンネルを擬似的に保存するrepository
 type MockRepository struct {
-	lock      sync.Mutex
-	rating    map[string]float64
-	used      map[string]int
-	effects   map[string]float64
-	relations map[string]map[string]float64
+	lock         sync.Mutex
+	channelLock  sync.Mutex
+	rating       map[string]float64
+	used         map[string]int
+	effects      map[string]float64
+	relations    map[string]map[string]float64
+	seenChannels map[string]time.Time
 }
 
 func newMockRepository() *MockRepository {
 	return &MockRepository{
-		lock:      sync.Mutex{},
-		rating:    make(map[string]float64),
-		used:      make(map[string]int),
-		effects:   make(map[string]float64),
-		relations: make(map[string]map[string]float64),
+		lock:         sync.Mutex{},
+		rating:       make(map[string]float64),
+		used:         make(map[string]int),
+		effects:      make(map[string]float64),
+		relations:    make(map[string]map[string]float64),
+		seenChannels: make(map[string]time.Time),
 	}
 }
 
@@ -33,6 +38,14 @@ func (m *MockRepository) Lock() {
 
 func (m *MockRepository) Unlock() {
 	m.lock.Unlock()
+}
+
+func (m *MockRepository) ChannelLock() {
+	m.channelLock.Lock()
+}
+
+func (m *MockRepository) ChannelUnlock() {
+	m.channelLock.Unlock()
 }
 
 func (m *MockRepository) GetRating(ID string) (*repository.Rating, error) {
@@ -164,17 +177,24 @@ func (m *MockRepository) UpdateStamp(stamp *repository.Stamp) error {
 }
 
 func (m *MockRepository) GetSeenChannel(ID string) (*repository.SeenChannel, error) {
+	if t, ok := m.seenChannels[ID]; ok {
+		return &repository.SeenChannel{
+			ID:                   ID,
+			LastProcessedMessage: t,
+		}, nil
+	}
 	return nil, nil
 }
 
 func (m *MockRepository) UpdateSeenChannel(channel *repository.SeenChannel) error {
+	m.seenChannels[channel.ID] = channel.LastProcessedMessage
 	return nil
 }
 
-func Test_processMessage(t *testing.T) {
+func TestProcessMessage(t *testing.T) {
 	type args struct {
 		repo     repository.Repository
-		messages []*message
+		messages []*Message
 	}
 	type assert struct {
 		stampUsed   map[string]int
@@ -191,8 +211,8 @@ func Test_processMessage(t *testing.T) {
 			name: "normal",
 			args: args{
 				repo: newMockRepository(),
-				messages: []*message{{
-					messageStamps: []*stamp{
+				messages: []*Message{{
+					MessageStamps: []*stamp{
 						{
 							name:        "ultrafastparrot",
 							id:          "ultrafastparrot",
@@ -200,17 +220,15 @@ func Test_processMessage(t *testing.T) {
 							moveEffects: []string{"rotate", "parrot"},
 						},
 					},
-					userReactions: [][]*reaction{
+					UserReactions: [][]*reaction{
 						{
 							{
-								name: "ultrafastparrot",
-								id:   "ultrafastparrot",
+								id: "ultrafastparrot",
 							},
 						},
 						{
 							{
-								name: "ultrafastparrot",
-								id:   "ultrafastparrot",
+								id: "ultrafastparrot",
 							},
 						},
 					},
@@ -239,9 +257,9 @@ func Test_processMessage(t *testing.T) {
 			name: "empty",
 			args: args{
 				repo: newMockRepository(),
-				messages: []*message{{
-					messageStamps: nil,
-					userReactions: nil,
+				messages: []*Message{{
+					MessageStamps: nil,
+					UserReactions: nil,
 				}},
 			},
 			assert:  assert{},
@@ -251,8 +269,8 @@ func Test_processMessage(t *testing.T) {
 			name: "relations",
 			args: args{
 				repo: newMockRepository(),
-				messages: []*message{{
-					messageStamps: []*stamp{
+				messages: []*Message{{
+					MessageStamps: []*stamp{
 						{
 							name:        "bigultrafastparrot_1",
 							id:          "bigultrafastparrot_1",
@@ -278,7 +296,7 @@ func Test_processMessage(t *testing.T) {
 							moveEffects: nil,
 						},
 					},
-					userReactions: nil,
+					UserReactions: nil,
 				}},
 			},
 			assert: assert{
@@ -315,9 +333,9 @@ func Test_processMessage(t *testing.T) {
 			name: "minus_relation",
 			args: args{
 				repo: newMockRepository(),
-				messages: []*message{
+				messages: []*Message{
 					{
-						messageStamps: []*stamp{
+						MessageStamps: []*stamp{
 							{
 								name:        "bigultrafastparrot_1",
 								id:          "bigultrafastparrot_1",
@@ -331,10 +349,10 @@ func Test_processMessage(t *testing.T) {
 								moveEffects: nil,
 							},
 						},
-						userReactions: nil,
+						UserReactions: nil,
 					},
 					{
-						messageStamps: []*stamp{
+						MessageStamps: []*stamp{
 							{
 								name:        "bigultrafastparrot_1",
 								id:          "bigultrafastparrot_1",
@@ -342,7 +360,7 @@ func Test_processMessage(t *testing.T) {
 								moveEffects: nil,
 							},
 						},
-						userReactions: nil,
+						UserReactions: nil,
 					},
 				},
 			},
@@ -364,7 +382,7 @@ func Test_processMessage(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			for _, message := range tt.args.messages {
-				if err := processMessage(tt.args.repo, message); (err != nil) != tt.wantErr {
+				if err := ProcessMessage(tt.args.repo, message); (err != nil) != tt.wantErr {
 					t.Errorf("processMessage() error = %v, wantErr %v", err, tt.wantErr)
 				}
 			}

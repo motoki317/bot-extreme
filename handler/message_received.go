@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/motoki317/bot-extreme/api"
 	"github.com/motoki317/bot-extreme/janken"
+	"github.com/motoki317/bot-extreme/repository"
 	bot "github.com/traPtitech/traq-bot"
 	"log"
 	"os"
@@ -13,18 +14,28 @@ var (
 	botUuid = os.Getenv("BOT_UUID")
 )
 
-func MessageReceived(processor *janken.Processor) func(payload *bot.MessageCreatedPayload) {
+func MessageReceived(repo repository.Repository) func(payload *bot.MessageCreatedPayload) {
+	processor := janken.NewProcessor(repo)
+	updater := &updater{
+		repo: repo,
+	}
+
 	return func(payload *bot.MessageCreatedPayload) {
-		err := messageReceived(processor, payload)
-		if err != nil {
-			log.Println(err)
-		}
+		log.Println(fmt.Sprintf("[%s]: %s", payload.Message.User.DisplayName, payload.Message.PlainText))
+
+		handleJanken(processor, payload)
+
+		// より古いメッセージを処理しスタンプのレーティングを更新する
+		go func() {
+			err := updater.updateRatings(payload.Message.ChannelID)
+			if err != nil {
+				log.Println(err)
+			}
+		}()
 	}
 }
 
-func messageReceived(processor *janken.Processor, payload *bot.MessageCreatedPayload) error {
-	log.Println(fmt.Sprintf("[%s]: %s", payload.Message.User.DisplayName, payload.Message.PlainText))
-
+func handleJanken(processor *janken.Processor, payload *bot.MessageCreatedPayload) {
 	if isMentioned(payload) {
 		sender := &janken.User{
 			DisplayName: payload.Message.User.DisplayName,
@@ -39,9 +50,6 @@ func messageReceived(processor *janken.Processor, payload *bot.MessageCreatedPay
 			}
 		})
 	}
-
-	// TODO: handle message contents and change stamp ratings
-	return nil
 }
 
 // メッセージ内でBotがメンションされたかを判定

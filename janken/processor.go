@@ -36,7 +36,7 @@ func (p *Processor) getCorrespondingGame(uuid string) *Game {
 	return nil
 }
 
-// メンションされたメッセージを処理します。何らかのアクションがあった場合、trueを返します。
+// メンションされたメッセージを処理します。
 func (p *Processor) Handle(sender *User, plainText string, mentioned []*User, respond func(string)) {
 	err := p.handle(sender, plainText, mentioned, respond)
 	if err != nil {
@@ -172,11 +172,11 @@ func (p *Processor) handlePvP(game *Game, sender *User, respond func(string), pl
 	}
 
 	// 両方の手が集まったならば、評価する
-	selfPoints, err := evaluate.Message(p.repo, game.selfResponse)
+	selfPoints, err := evaluate.MessagePoint(p.repo, game.selfResponse)
 	if err != nil {
 		return err
 	}
-	opponentPoints, err := evaluate.Message(p.repo, game.opponentResponse)
+	opponentPoints, err := evaluate.MessagePoint(p.repo, game.opponentResponse)
 	if err != nil {
 		return err
 	}
