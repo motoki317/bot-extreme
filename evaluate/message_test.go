@@ -66,6 +66,10 @@ func (m EmptyRepository) UpdateStampRelations(relations []*repository.StampRelat
 	return nil
 }
 
+func (m EmptyRepository) DeleteStampRelations(threshold float64) error {
+	return nil
+}
+
 func (m EmptyRepository) GetStamp(ID string) (*repository.Stamp, error) {
 	return &repository.Stamp{
 		ID:   ID,

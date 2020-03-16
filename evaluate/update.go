@@ -3,6 +3,7 @@ package evaluate
 import (
 	"github.com/motoki317/bot-extreme/repository"
 	openapi "github.com/sapphi-red/go-traq"
+	"math"
 	"sort"
 )
 
@@ -299,7 +300,11 @@ func (u *updater) updateStampRelations() error {
 		toSave = append(toSave, r)
 	}
 
-	return u.repo.UpdateStampRelations(toSave)
+	err := u.repo.UpdateStampRelations(toSave)
+	if err != nil {
+		return err
+	}
+	return u.repo.DeleteStampRelations(0)
 }
 
 func (u *updater) updateRelationForStampSet(stampSet map[string]bool, relations map[string]map[string]*repository.StampRelation) {
@@ -348,7 +353,7 @@ func (u *updater) updateRelationForStampSet(stampSet map[string]bool, relations 
 			if _, ok := stampSet[s2]; ok {
 				continue
 			}
-			r.Point -= 0.1
+			r.Point = math.Max(0, r.Point-0.1)
 		}
 	}
 }

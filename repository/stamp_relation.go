@@ -22,4 +22,6 @@ type StampRelationRepository interface {
 	// 存在する場合は更新
 	// 存在しない場合は新規に作成します
 	UpdateStampRelations(relations []*StampRelation) error
+	// 指定したポイント以下のスタンプの関係を全て削除します
+	DeleteStampRelations(thresholdPoint float64) error
 }

@@ -160,6 +160,20 @@ func (m *MockRepository) UpdateStampRelations(relations []*repository.StampRelat
 	return nil
 }
 
+func (m *MockRepository) DeleteStampRelations(thresholdPoint float64) error {
+	for from, relation := range m.relations {
+		for to, r := range relation {
+			if r <= thresholdPoint {
+				delete(relation, to)
+			}
+		}
+		if len(relation) == 0 {
+			delete(m.relations, from)
+		}
+	}
+	return nil
+}
+
 func (m *MockRepository) GetStamp(ID string) (*repository.Stamp, error) {
 	if stamp, ok := m.used[ID]; ok {
 		return &repository.Stamp{

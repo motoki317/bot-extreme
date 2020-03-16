@@ -62,6 +62,10 @@ func (m EmptyRepository) UpdateStampRelations(relations []*repository.StampRelat
 	return nil
 }
 
+func (m EmptyRepository) DeleteStampRelations(threshold float64) error {
+	return nil
+}
+
 func (m EmptyRepository) UpdateAllEffectPoints(points []*repository.EffectPoint) error {
 	return nil
 }

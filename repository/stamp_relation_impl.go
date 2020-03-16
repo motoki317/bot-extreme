@@ -73,3 +73,8 @@ func (r *RepositoryImpl) UpdateStampRelations(relations []*StampRelation) error 
 	_, err := r.db.Exec("INSERT INTO `stamp_relation` (id_from, id_to, point) VALUES "+placeHolder+" ON DUPLICATE KEY UPDATE point = VALUES(point)", values...)
 	return err
 }
+
+func (r *RepositoryImpl) DeleteStampRelations(thresholdPoint float64) error {
+	_, err := r.db.Exec("DELETE FROM `stamp_relation` WHERE `point` <= ?", thresholdPoint)
+	return err
+}
