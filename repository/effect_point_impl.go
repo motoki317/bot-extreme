@@ -9,6 +9,8 @@ func (r *RepositoryImpl) GetEffectPoint(name string) (*EffectPoint, error) {
 	var effectPoint EffectPoint
 	if err := r.db.Get(&effectPoint, "SELECT * FROM `effect_point` WHERE `name` = ?", name); err != nil && err != sql.ErrNoRows {
 		return nil, err
+	} else if err == sql.ErrNoRows {
+		return nil, nil
 	}
 	return &effectPoint, nil
 }

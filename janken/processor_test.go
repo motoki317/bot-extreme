@@ -90,12 +90,12 @@ func TestJankenProcessor(t *testing.T) {
 
 	t.Run("player versus player", func(t *testing.T) {
 		sender := &User{
-			DisplayName: "toki",
-			ID:          "this_is_totally_a_uuid",
+			Name: "toki",
+			ID:   "this_is_totally_a_uuid",
 		}
 		opponent := &User{
-			DisplayName: "xxpoxx",
-			ID:          "also_totally_a_uuid",
+			Name: "xxpoxx",
+			ID:   "also_totally_a_uuid",
 		}
 		respond := func(s string) {
 			t.Log("Got response from processor: " + s)
@@ -120,8 +120,8 @@ func TestJankenProcessor(t *testing.T) {
 
 	t.Run("player versus bot", func(t *testing.T) {
 		sender := &User{
-			DisplayName: "toki",
-			ID:          "this_is_totally_a_uuid",
+			Name: "toki",
+			ID:   "this_is_totally_a_uuid",
 		}
 		respond := func(s string) {
 			t.Log("Got response from processor: " + s)

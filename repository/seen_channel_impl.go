@@ -6,6 +6,8 @@ func (r *RepositoryImpl) GetSeenChannel(ID string) (*SeenChannel, error) {
 	var channel SeenChannel
 	if err := r.db.Get(&channel, "SELECT * FROM `seen_channel` WHERE `id` = ?", ID); err != nil && err != sql.ErrNoRows {
 		return nil, err
+	} else if err == sql.ErrNoRows {
+		return nil, nil
 	}
 	return &channel, nil
 }

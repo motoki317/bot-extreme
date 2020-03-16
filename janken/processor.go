@@ -76,10 +76,11 @@ func (p *Processor) handle(sender *User, plainText string, mentioned []*User, re
 		return
 	case PvB:
 		game.opponent = &User{
-			DisplayName: botName,
-			ID:          botUuid,
+			Name: botName,
+			ID:   botUuid,
 		}
 		game.opponentResponse, err = evaluate.GetRandomStampResponse()
+		respond(game.opponentResponse)
 		if err != nil {
 			return err
 		}
@@ -103,7 +104,7 @@ func (p *Processor) handlePickOpponent(game *Game, plainText string, respond fun
 		respond(content)
 
 		go func() {
-			<-time.NewTimer(time.Second * 1).C
+			<-time.NewTimer(time.Second * 3).C
 			respond("じゃーんけーん")
 		}()
 
@@ -136,13 +137,13 @@ func (p *Processor) handlePickOpponent(game *Game, plainText string, respond fun
 		game.opponent = mentioned[0]
 		game.State = PvP
 		respond(strings.Join([]string{
-			"@" + game.opponent.DisplayName + " 分かりました！",
+			"@" + game.opponent.Name + " 分かりました！",
 			"私が「じゃーんけーん」と言ったら、じゃんけんの手をリプライしてください！",
 		}, "\n"))
 
 		go func() {
 			<-time.NewTimer(time.Second * 1).C
-			respond("@" + game.opponent.DisplayName + " じゃーんけーん")
+			respond("@" + game.opponent.Name + " じゃーんけーん")
 		}()
 
 		return
@@ -183,56 +184,76 @@ func (p *Processor) handlePvP(game *Game, sender *User, respond func(string), pl
 	result := evaluate.PickWinner(selfPoints, opponentPoints)
 
 	log.Printf("%s %v pts vs %s %v pts, result: %v\n",
-		game.self.DisplayName, selfPoints,
-		game.opponent.DisplayName, opponentPoints, result)
+		game.self.Name, selfPoints,
+		game.opponent.Name, opponentPoints, result)
 
 	// 引き分け
 	if result == evaluate.Even {
 		game.selfResponse = ""
 		game.opponentResponse = ""
-		respond("@" + game.opponent.DisplayName + " あーいこーで")
+		respond("@" + game.opponent.Name + " あーいこーで")
 		return
 	}
 
 	// 勝敗が決定した、ゲームを終了する
 	delete(p.games, game.self.ID)
-	// レーティングを計算
-	selfRating, err := p.getRatingOrDefault(game.self.ID)
-	if err != nil {
-		return err
-	}
-	opponentRating, err := p.getRatingOrDefault(game.opponent.ID)
-	if err != nil {
-		return err
-	}
 
-	var oldSelfRating, oldOpponentRating float64
-	response := []string{"@" + game.opponent.DisplayName, "", ""}
+	response := []string{"@" + game.opponent.Name, "", ""}
 
-	if result == evaluate.FirstWins {
-		// 自分の勝ち
-		response = append(response, ":"+game.self.DisplayName+": の勝ちです！")
-		selfRating.Rating, opponentRating.Rating = evaluate.ChangeRating(selfRating.Rating, opponentRating.Rating)
+	if game.State == PvP {
+		// PvPならレーティングを計算
+		selfRating, err := p.getRatingOrDefault(game.self.ID)
+		if err != nil {
+			return err
+		}
+		opponentRating, err := p.getRatingOrDefault(game.opponent.ID)
+		if err != nil {
+			return err
+		}
+
+		var oldSelfRating, oldOpponentRating float64
+
+		if result == evaluate.FirstWins {
+			// 自分の勝ち
+			response = append(response, ":"+game.self.Name+": の勝ちです！")
+			selfRating.Rating, opponentRating.Rating = evaluate.ChangeRating(selfRating.Rating, opponentRating.Rating)
+		} else {
+			// 相手の勝ち
+			response = append(response, ":"+game.opponent.Name+": の勝ちです！")
+			opponentRating.Rating, selfRating.Rating = evaluate.ChangeRating(opponentRating.Rating, selfRating.Rating)
+		}
+
+		err = p.repo.UpdateRating(selfRating)
+		if err != nil {
+			return
+		}
+		err = p.repo.UpdateRating(opponentRating)
+		if err != nil {
+			return
+		}
+
+		response = append(response, "", "")
+		response = append(response, "新しいレーティングは")
+		response = append(response, fmt.Sprintf(":%s: %v (%+v)", game.self.Name, int(selfRating.Rating), int(selfRating.Rating-oldSelfRating)))
+		response = append(response, fmt.Sprintf(":%s: %v (%+v)", game.opponent.Name, int(opponentRating.Rating), int(opponentRating.Rating-oldOpponentRating)))
+		response = append(response, "です！")
 	} else {
-		// 相手の勝ち
-		response = append(response, ":"+game.opponent.DisplayName+": の勝ちです！")
-		opponentRating.Rating, selfRating.Rating = evaluate.ChangeRating(opponentRating.Rating, selfRating.Rating)
+		if result == evaluate.FirstWins {
+			// 自分の勝ち
+			response = append(response, ":"+game.self.Name+": の勝ちです！")
+		} else {
+			// 相手の勝ち
+			response = append(response, ":"+game.opponent.Name+": の勝ちです！")
+		}
+		response = append(response, "私との対戦なのでレーティング変動はありません。")
+		response = append(response, "ちなみにいまのレーティングは")
+		selfRating, err := p.getRatingOrDefault(game.self.ID)
+		if err != nil {
+			return err
+		}
+		response = append(response, fmt.Sprintf(":%s: %v", game.self.Name, int(selfRating.Rating)))
+		response = append(response, "です！")
 	}
-
-	err = p.repo.UpdateRating(selfRating)
-	if err != nil {
-		return
-	}
-	err = p.repo.UpdateRating(opponentRating)
-	if err != nil {
-		return
-	}
-
-	response = append(response, "", "")
-	response = append(response, "新しいレーティングは")
-	response = append(response, fmt.Sprintf(":%s: : %v (%+v)", game.self.DisplayName, int(selfRating.Rating), int(selfRating.Rating-oldSelfRating)))
-	response = append(response, fmt.Sprintf(":%s: : %v (%+v)", game.opponent.DisplayName, int(opponentRating.Rating), int(opponentRating.Rating-oldOpponentRating)))
-	response = append(response, "です！")
 
 	respond(strings.Join(response, "\n"))
 	return

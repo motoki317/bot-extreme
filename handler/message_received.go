@@ -38,8 +38,8 @@ func MessageReceived(repo repository.Repository) func(payload *bot.MessageCreate
 func handleJanken(processor *janken.Processor, payload *bot.MessageCreatedPayload) {
 	if isMentioned(payload) {
 		sender := &janken.User{
-			DisplayName: payload.Message.User.DisplayName,
-			ID:          payload.Message.User.ID,
+			Name: payload.Message.User.Name,
+			ID:   payload.Message.User.ID,
 		}
 		plainText := payload.Message.PlainText
 
@@ -68,8 +68,8 @@ func getMentionedUsers(payload *bot.MessageCreatedPayload) (users []*janken.User
 		if e.Type == "user" && e.ID != botUuid {
 			users = append(users, &janken.User{
 				// e.Raw example: "@takashi_trap"
-				DisplayName: e.Raw[1:],
-				ID:          e.ID,
+				Name: e.Raw[1:],
+				ID:   e.ID,
 			})
 		}
 	}

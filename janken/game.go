@@ -22,8 +22,8 @@ type Game struct {
 }
 
 type User struct {
-	DisplayName string
-	ID          string
+	Name string
+	ID   string
 }
 
 func newGame(sender *User) *Game {
