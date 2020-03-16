@@ -225,11 +225,11 @@ func (p *Processor) handlePvP(game *Game, sender *User, respond func(string), pl
 
 		err = p.repo.UpdateRating(selfRating)
 		if err != nil {
-			return
+			return err
 		}
 		err = p.repo.UpdateRating(opponentRating)
 		if err != nil {
-			return
+			return err
 		}
 
 		response = append(response, "", "")
