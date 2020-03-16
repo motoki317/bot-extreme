@@ -8,3 +8,5 @@ startup: |
 use_mariadb: true
 
 entrypoint: "./main"
+
+http_proxy: 3000
