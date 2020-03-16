@@ -255,7 +255,10 @@ func (p *Processor) handlePvP(game *Game, sender *User, respond func(string), pl
 		response = append(response, "です！")
 	}
 
-	respond(strings.Join(response, "\n"))
+	go func() {
+		<-time.NewTimer(time.Second * 3).C
+		respond(strings.Join(response, "\n"))
+	}()
 	return
 }
 
