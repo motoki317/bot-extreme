@@ -23,7 +23,7 @@ func (r *RepositoryImpl) GetStampRelation(from, to string) (*StampRelation, erro
 func (r *RepositoryImpl) GetStampRelations(id string) (relations []*StampRelation, err error) {
 	var relationsSlice []StampRelation
 
-	if err = r.db.Get(&relationsSlice, "SELECT * FROM `stamp_relation` WHERE `id_from` = ?", id); err != nil && err != sql.ErrNoRows {
+	if err = r.db.Select(&relationsSlice, "SELECT * FROM `stamp_relation` WHERE `id_from` = ?", id); err != nil && err != sql.ErrNoRows {
 		return nil, err
 	}
 	for _, r := range relationsSlice {
@@ -32,7 +32,7 @@ func (r *RepositoryImpl) GetStampRelations(id string) (relations []*StampRelatio
 	}
 
 	relationsSlice = nil
-	if err = r.db.Get(&relationsSlice, "SELECT * FROM `stamp_relation` WHERE `id_to` = ?", id); err != nil && err != sql.ErrNoRows {
+	if err = r.db.Select(&relationsSlice, "SELECT * FROM `stamp_relation` WHERE `id_to` = ?", id); err != nil && err != sql.ErrNoRows {
 		return nil, err
 	}
 	for _, r := range relationsSlice {

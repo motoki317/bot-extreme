@@ -15,7 +15,7 @@ func (r *RepositoryImpl) GetEffectPoint(name string) (*EffectPoint, error) {
 
 func (r *RepositoryImpl) GetAllEffectPoints() ([]*EffectPoint, error) {
 	var effectPoints []EffectPoint
-	if err := r.db.Get(&effectPoints, "SELECT * FROM `effect_point`"); err != nil && err != sql.ErrNoRows {
+	if err := r.db.Select(&effectPoints, "SELECT * FROM `effect_point`"); err != nil && err != sql.ErrNoRows {
 		return nil, err
 	}
 	ret := make([]*EffectPoint, 0, len(effectPoints))
