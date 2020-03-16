@@ -154,9 +154,9 @@ func (e *messageEvaluator) stampPoint(stamp *stamp) (float64, error) {
 		}
 	}
 
-	tmp := math.Log(float64(used.Used + 1))
+	tmp := math.Log(float64(used.Used + 2))
 	p := 24 - 2*(tmp/5+5/tmp)
-	return p, nil
+	return math.Min(20, math.Max(0, p)), nil
 }
 
 func (e *messageEvaluator) effectPoint(stamp *stamp, effectPoints map[string]float64) float64 {
@@ -174,8 +174,8 @@ func (e *messageEvaluator) effectPoint(stamp *stamp, effectPoints map[string]flo
 	}
 	moveEffectPoint /= math.Max(1, float64(len(stamp.moveEffects)))
 
-	sizeEffectPoint = math.Max(0, 6-(sizeEffectPoint/1.5+1.5/sizeEffectPoint)/2)
-	moveEffectPoint = math.Max(0, 24-2*(moveEffectPoint/3+3/moveEffectPoint))
+	sizeEffectPoint = math.Min(5, math.Max(0, 6-(sizeEffectPoint/1.5+1.5/sizeEffectPoint)/2))
+	moveEffectPoint = math.Min(20, math.Max(0, 24-2*(moveEffectPoint/3+3/moveEffectPoint)))
 	return sizeEffectPoint + moveEffectPoint
 }
 
@@ -227,5 +227,5 @@ func (e *messageEvaluator) combinationPoint() (float64, error) {
 	if count == 0 {
 		return 0, nil
 	}
-	return ret / float64(count), nil
+	return math.Min(20, math.Max(0, ret/float64(count))), nil
 }
