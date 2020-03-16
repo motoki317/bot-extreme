@@ -100,14 +100,14 @@ func (p *Processor) handlePickOpponent(game *Game, plainText string, respond fun
 		game.State = PvB
 
 		respond(strings.Join([]string{
-			"@" + game.opponent.Name + " 分かりました！",
+			"分かりました！",
 			"私が「じゃーんけーん」と言ったら、選んだじゃんけんの手を私にリプライしてください！",
 			"`@BOT_extreme :ultrafastparrot:`",
 		}, "\n"))
 
 		go func() {
-			<-time.NewTimer(time.Second * 1).C
-			respond("@" + game.opponent.Name + " じゃーんけーん")
+			<-time.NewTimer(time.Second * 3).C
+			respond("じゃーんけーん")
 		}()
 
 		return
@@ -166,7 +166,7 @@ func (p *Processor) handleOpponentResponse(game *Game, plainText string, respond
 		}, "\n"))
 
 		go func() {
-			<-time.NewTimer(time.Second * 1).C
+			<-time.NewTimer(time.Second * 3).C
 			respond("@" + game.opponent.Name + " じゃーんけーん")
 		}()
 	} else if senderUuid == game.self.ID {
