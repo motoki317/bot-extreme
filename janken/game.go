@@ -28,7 +28,7 @@ type User struct {
 
 func newGame(sender *User) *Game {
 	return &Game{
-		State: WaitingOpponent,
+		State: OpponentPick,
 		self:  sender,
 	}
 }

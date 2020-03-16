@@ -71,8 +71,10 @@ func (p *Processor) handle(sender *User, plainText string, mentioned []*User, re
 	}
 
 	switch game.State {
-	case WaitingOpponent:
+	case OpponentPick:
 		p.handlePickOpponent(game, plainText, respond, sender.ID, mentioned)
+		return
+	case WaitingOpponent:
 		return
 	case PvB:
 		game.opponent = &User{
@@ -97,15 +99,15 @@ func (p *Processor) handlePickOpponent(game *Game, plainText string, respond fun
 		// Player versus Bot
 		game.State = PvB
 
-		content := strings.Join([]string{
-			"分かりました！",
-			"私が「じゃーんけーん」と言ったら、じゃんけんの手をリプライしてください！",
-		}, "\n")
-		respond(content)
+		respond(strings.Join([]string{
+			"@" + game.opponent.Name + " 分かりました！",
+			"私が「じゃーんけーん」と言ったら、選んだじゃんけんの手を私にリプライしてください！",
+			"`@BOT_extreme :ultrafastparrot:`",
+		}, "\n"))
 
 		go func() {
-			<-time.NewTimer(time.Second * 3).C
-			respond("じゃーんけーん")
+			<-time.NewTimer(time.Second * 1).C
+			respond("@" + game.opponent.Name + " じゃーんけーん")
 		}()
 
 		return
@@ -135,18 +137,45 @@ func (p *Processor) handlePickOpponent(game *Game, plainText string, respond fun
 
 		// picked opponent
 		game.opponent = mentioned[0]
+		game.State = WaitingOpponent
+		// wait for opponent response
+		respond(strings.Join([]string{
+			"分かりました！",
+			"",
+			"",
+			"@" + game.opponent.Name + " さん、準備ができたら私にリプライを飛ばしてください！",
+			"`@" + botName + "`",
+			"",
+			"",
+			"@" + game.self.Name + " さん、準備ができないようだったら私に「やっぱりいい」とリプライしてください。",
+			"`@" + botName + " やっぱりいい`",
+		}, "\n"))
+
+		return
+	}
+}
+
+func (p *Processor) handleOpponentResponse(game *Game, plainText string, respond func(string), senderUuid string) {
+	if senderUuid == game.opponent.ID {
+		// opponent responded
 		game.State = PvP
 		respond(strings.Join([]string{
 			"@" + game.opponent.Name + " 分かりました！",
-			"私が「じゃーんけーん」と言ったら、じゃんけんの手をリプライしてください！",
+			"私が「じゃーんけーん」と言ったら、二人ともじゃんけんの手を私にリプライしてください！",
+			"`@BOT_extreme :ultrafastparrot:`",
 		}, "\n"))
 
 		go func() {
 			<-time.NewTimer(time.Second * 1).C
 			respond("@" + game.opponent.Name + " じゃーんけーん")
 		}()
+	} else if senderUuid == game.self.ID {
+		if regexp.MustCompile("\\s*やっぱりいい\\s*").MatchString(plainText) {
+			// Cancel game
+			delete(p.games, senderUuid)
 
-		return
+			respond("分かりました。またじゃんけんしましょう！")
+		}
 	}
 }
 
