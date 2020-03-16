@@ -1,8 +1,10 @@
 package repository
 
+import "database/sql"
+
 func (r *RepositoryImpl) GetStamp(ID string) (*Stamp, error) {
 	var stamp Stamp
-	if err := r.db.Get(&stamp, "SELECT * FROM `stamp` WHERE `id` = ?", ID); err != nil {
+	if err := r.db.Get(&stamp, "SELECT * FROM `stamp` WHERE `id` = ?", ID); err != nil && err != sql.ErrNoRows {
 		return nil, err
 	}
 	return &stamp, nil

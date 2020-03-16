@@ -1,7 +1,6 @@
 package evaluate
 
 import (
-	"database/sql"
 	"github.com/motoki317/bot-extreme/repository"
 	"math"
 	"sync"
@@ -145,7 +144,7 @@ func (e *messageEvaluator) calculatePoints() (float64, error) {
 
 func (e *messageEvaluator) stampPoint(stamp *stamp) (float64, error) {
 	used, err := e.repo.GetStamp(stamp.id)
-	if err != nil && err != sql.ErrNoRows {
+	if err != nil {
 		return 0, err
 	}
 	if used == nil {

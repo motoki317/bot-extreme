@@ -1,12 +1,13 @@
 package repository
 
 import (
+	"database/sql"
 	"strings"
 )
 
 func (r *RepositoryImpl) GetEffectPoint(name string) (*EffectPoint, error) {
 	var effectPoint EffectPoint
-	if err := r.db.Get(&effectPoint, "SELECT * FROM `effect_point` WHERE `name` = ?", name); err != nil {
+	if err := r.db.Get(&effectPoint, "SELECT * FROM `effect_point` WHERE `name` = ?", name); err != nil && err != sql.ErrNoRows {
 		return nil, err
 	}
 	return &effectPoint, nil
@@ -14,7 +15,7 @@ func (r *RepositoryImpl) GetEffectPoint(name string) (*EffectPoint, error) {
 
 func (r *RepositoryImpl) GetAllEffectPoints() ([]*EffectPoint, error) {
 	var effectPoints []EffectPoint
-	if err := r.db.Get(&effectPoints, "SELECT * FROM `effect_point`"); err != nil {
+	if err := r.db.Get(&effectPoints, "SELECT * FROM `effect_point`"); err != nil && err != sql.ErrNoRows {
 		return nil, err
 	}
 	ret := make([]*EffectPoint, 0, len(effectPoints))

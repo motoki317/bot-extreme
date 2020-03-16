@@ -1,7 +1,6 @@
 package janken
 
 import (
-	"database/sql"
 	"fmt"
 	"github.com/motoki317/bot-extreme/evaluate"
 	"github.com/motoki317/bot-extreme/repository"
@@ -242,12 +241,13 @@ func (p *Processor) handlePvP(game *Game, sender *User, respond func(string), pl
 // ユーザーIDのレーティングを返します。存在しない場合、デフォルトを生成し返します。
 func (p *Processor) getRatingOrDefault(ID string) (*repository.Rating, error) {
 	if rating, err := p.repo.GetRating(ID); err == nil {
+		if rating == nil {
+			return &repository.Rating{
+				ID:     ID,
+				Rating: evaluate.DefaultRating,
+			}, nil
+		}
 		return rating, nil
-	} else if err == sql.ErrNoRows {
-		return &repository.Rating{
-			ID:     ID,
-			Rating: evaluate.DefaultRating,
-		}, nil
 	} else {
 		return nil, err
 	}

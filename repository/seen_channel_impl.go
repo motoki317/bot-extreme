@@ -1,8 +1,10 @@
 package repository
 
+import "database/sql"
+
 func (r *RepositoryImpl) GetSeenChannel(ID string) (*SeenChannel, error) {
 	var channel SeenChannel
-	if err := r.db.Get(&channel, "SELECT * FROM `seen_channel` WHERE `id` = ?", ID); err != nil {
+	if err := r.db.Get(&channel, "SELECT * FROM `seen_channel` WHERE `id` = ?", ID); err != nil && err != sql.ErrNoRows {
 		return nil, err
 	}
 	return &channel, nil
