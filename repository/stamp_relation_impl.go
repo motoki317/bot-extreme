@@ -49,6 +49,10 @@ func (r *RepositoryImpl) UpdateStampRelation(relation *StampRelation) error {
 }
 
 func (r *RepositoryImpl) UpdateStampRelations(relations []*StampRelation) error {
+	if len(relations) == 0 {
+		return nil
+	}
+
 	placeHolders := make([]string, 0, len(relations))
 	for range relations {
 		placeHolders = append(placeHolders, "(?, ?, ?)")

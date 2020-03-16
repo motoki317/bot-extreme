@@ -32,6 +32,10 @@ func (r *RepositoryImpl) UpdateEffectPoint(point *EffectPoint) error {
 }
 
 func (r *RepositoryImpl) UpdateAllEffectPoints(points []*EffectPoint) error {
+	if len(points) == 0 {
+		return nil
+	}
+
 	placeHolders := make([]string, 0, len(points))
 	for range points {
 		placeHolders = append(placeHolders, "(?, ?)")
