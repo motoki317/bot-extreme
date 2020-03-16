@@ -75,6 +75,7 @@ func (p *Processor) handle(sender *User, plainText string, mentioned []*User, re
 		p.handlePickOpponent(game, plainText, respond, sender.ID, mentioned)
 		return
 	case WaitingOpponent:
+		p.handleOpponentResponse(game, plainText, respond, sender.ID)
 		return
 	case PvB:
 		game.opponent = &User{
