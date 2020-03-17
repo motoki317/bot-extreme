@@ -228,7 +228,21 @@ func (p *Processor) handlePvP(game *Game, sender *User, respond func(string), pl
 	// 勝敗が決定した、ゲームを終了する
 	delete(p.games, game.self.ID)
 
-	response := []string{"@" + game.opponent.Name, "", ""}
+	response := []string{
+		"@" + game.opponent.Name,
+		"",
+		"",
+		fmt.Sprintf(":%s: %.2f pts - :%s: %.2f pts で...", game.self.Name, selfPoints, game.opponent.Name, opponentPoints),
+		"",
+		"",
+	}
+	if result == evaluate.FirstWins {
+		// 自分の勝ち
+		response = append(response, ":"+game.self.Name+": の勝ちです！")
+	} else {
+		// 相手の勝ち
+		response = append(response, ":"+game.opponent.Name+": の勝ちです！")
+	}
 
 	if game.State == PvP {
 		// PvPならレーティングを計算
@@ -245,11 +259,9 @@ func (p *Processor) handlePvP(game *Game, sender *User, respond func(string), pl
 
 		if result == evaluate.FirstWins {
 			// 自分の勝ち
-			response = append(response, ":"+game.self.Name+": の勝ちです！")
 			selfRating.Rating, opponentRating.Rating = evaluate.ChangeRating(selfRating.Rating, opponentRating.Rating)
 		} else {
 			// 相手の勝ち
-			response = append(response, ":"+game.opponent.Name+": の勝ちです！")
 			opponentRating.Rating, selfRating.Rating = evaluate.ChangeRating(opponentRating.Rating, selfRating.Rating)
 		}
 
@@ -262,19 +274,13 @@ func (p *Processor) handlePvP(game *Game, sender *User, respond func(string), pl
 			return err
 		}
 
-		response = append(response, "", "")
+		response = append(response, "")
+		response = append(response, "")
 		response = append(response, "新しいレーティングは")
 		response = append(response, fmt.Sprintf(":%s: %v (%+v)", game.self.Name, int(selfRating.Rating), int(selfRating.Rating-oldSelfRating)))
 		response = append(response, fmt.Sprintf(":%s: %v (%+v)", game.opponent.Name, int(opponentRating.Rating), int(opponentRating.Rating-oldOpponentRating)))
 		response = append(response, "です！")
 	} else {
-		if result == evaluate.FirstWins {
-			// 自分の勝ち
-			response = append(response, ":"+game.self.Name+": の勝ちです！")
-		} else {
-			// 相手の勝ち
-			response = append(response, ":"+game.opponent.Name+": の勝ちです！")
-		}
 		response = append(response, "私との対戦なのでレーティング変動はありません。")
 		response = append(response, "ちなみにいまのレーティングは")
 		selfRating, err := p.getRatingOrDefault(game.self.ID)
