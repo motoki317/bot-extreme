@@ -5,13 +5,15 @@ import (
 	"github.com/motoki317/bot-extreme/evaluate"
 	"github.com/motoki317/bot-extreme/repository"
 	"log"
+	"math"
 	"regexp"
 	"strings"
 	"time"
 )
 
 type Processor struct {
-	repo  repository.Repository
+	repo repository.Repository
+	// ゲームを始めた人のuuid -> game
 	games map[string]*Game
 }
 
@@ -22,12 +24,12 @@ func NewProcessor(repo repository.Repository) *Processor {
 	}
 }
 
-// ユーザーが参加しているゲームを取得
+// ユーザーが参加しているゲームを取得 自分がスタートしたゲームを優先的に取得します
 func (p *Processor) getCorrespondingGame(uuid string) *Game {
-	for starter, game := range p.games {
-		if starter == uuid {
-			return game
-		}
+	if game, ok := p.games[uuid]; ok {
+		return game
+	}
+	for _, game := range p.games {
 		if game.opponent != nil && game.opponent.ID == uuid {
 			return game
 		}
@@ -161,14 +163,14 @@ func (p *Processor) handleOpponentResponse(game *Game, plainText string, respond
 		// opponent responded
 		game.State = PvP
 		respond(strings.Join([]string{
-			"@" + game.opponent.Name + " 分かりました！",
+			"@" + game.self.Name + " 分かりました！",
 			"私が「じゃーんけーん」と言ったら、二人ともじゃんけんの手を私にリプライしてください！",
 			"`@BOT_extreme :ultrafastparrot:`",
 		}, "\n"))
 
 		go func() {
 			<-time.NewTimer(time.Second * 3).C
-			respond("@" + game.opponent.Name + " じゃーんけーん")
+			respond("@" + game.self.Name + " じゃーんけーん")
 		}()
 	} else if senderUuid == game.self.ID {
 		if regexp.MustCompile("\\s*やっぱりいい\\s*").MatchString(plainText) {
@@ -255,7 +257,7 @@ func (p *Processor) handlePvP(game *Game, sender *User, respond func(string), pl
 			return err
 		}
 
-		var oldSelfRating, oldOpponentRating float64
+		oldSelfRating, oldOpponentRating := selfRating.Rating, opponentRating.Rating
 
 		if result == evaluate.FirstWins {
 			// 自分の勝ち
@@ -277,8 +279,10 @@ func (p *Processor) handlePvP(game *Game, sender *User, respond func(string), pl
 		response = append(response, "")
 		response = append(response, "")
 		response = append(response, "新しいレーティングは")
-		response = append(response, fmt.Sprintf(":%s: %v (%+v)", game.self.Name, int(selfRating.Rating), int(selfRating.Rating-oldSelfRating)))
-		response = append(response, fmt.Sprintf(":%s: %v (%+v)", game.opponent.Name, int(opponentRating.Rating), int(opponentRating.Rating-oldOpponentRating)))
+		response = append(response, fmt.Sprintf(":%s: %d (%+d)",
+			game.self.Name, int(math.Round(selfRating.Rating)), int(math.Round(selfRating.Rating-oldSelfRating))))
+		response = append(response, fmt.Sprintf(":%s: %d (%+d)",
+			game.opponent.Name, int(math.Round(opponentRating.Rating)), int(math.Round(opponentRating.Rating-oldOpponentRating))))
 		response = append(response, "です！")
 	} else {
 		response = append(response, "私との対戦なのでレーティング変動はありません。")

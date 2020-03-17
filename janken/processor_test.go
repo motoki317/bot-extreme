@@ -113,6 +113,10 @@ func TestJankenProcessor(t *testing.T) {
 		assert.Equal(t, err, nil)
 		assert.Equal(t, len(p.games), 1)
 
+		err = p.handle(opponent, "@BOT_extreme @xxpoxx", []*User{opponent}, respond)
+		assert.Equal(t, err, nil)
+		assert.Equal(t, len(p.games), 1)
+
 		err = p.handle(sender, "@BOT_extreme :thonk_spin.ex-large.rotate.parrot:", []*User{}, respond)
 		assert.Equal(t, err, nil)
 		assert.Equal(t, len(p.games), 1)
