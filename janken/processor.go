@@ -234,16 +234,16 @@ func (p *Processor) handlePvP(game *Game, sender *User, respond func(string), pl
 		"@" + game.opponent.Name,
 		"",
 		"",
-		fmt.Sprintf(":%s: %.2f pts - :%s: %.2f pts で...", game.self.Name, selfPoints, game.opponent.Name, opponentPoints),
+		fmt.Sprintf(":@%s: %.2f pts - :@%s: %.2f pts で...", game.self.Name, selfPoints, game.opponent.Name, opponentPoints),
 		"",
 		"",
 	}
 	if result == evaluate.FirstWins {
 		// 自分の勝ち
-		response = append(response, ":"+game.self.Name+": の勝ちです！")
+		response = append(response, ":@"+game.self.Name+": の勝ちです！")
 	} else {
 		// 相手の勝ち
-		response = append(response, ":"+game.opponent.Name+": の勝ちです！")
+		response = append(response, ":@"+game.opponent.Name+": の勝ちです！")
 	}
 
 	if game.State == PvP {
@@ -279,9 +279,9 @@ func (p *Processor) handlePvP(game *Game, sender *User, respond func(string), pl
 		response = append(response, "")
 		response = append(response, "")
 		response = append(response, "新しいレーティングは")
-		response = append(response, fmt.Sprintf(":%s: %d (%+d)",
+		response = append(response, fmt.Sprintf(":@%s: %d (%+d)",
 			game.self.Name, int(math.Round(selfRating.Rating)), int(math.Round(selfRating.Rating-oldSelfRating))))
-		response = append(response, fmt.Sprintf(":%s: %d (%+d)",
+		response = append(response, fmt.Sprintf(":@%s: %d (%+d)",
 			game.opponent.Name, int(math.Round(opponentRating.Rating)), int(math.Round(opponentRating.Rating-oldOpponentRating))))
 		response = append(response, "です！")
 	} else {
@@ -291,7 +291,7 @@ func (p *Processor) handlePvP(game *Game, sender *User, respond func(string), pl
 		if err != nil {
 			return err
 		}
-		response = append(response, fmt.Sprintf(":%s: %v", game.self.Name, int(selfRating.Rating)))
+		response = append(response, fmt.Sprintf(":@%s: %v", game.self.Name, int(selfRating.Rating)))
 		response = append(response, "です！")
 	}
 
