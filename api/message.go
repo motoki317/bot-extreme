@@ -16,9 +16,11 @@ func PostMessage(channelId, content string) (*openapi.Message, error) {
 	message, _, err := client.MessageApi.PostMessage(
 		auth,
 		channelId,
-		openapi.SendMessage{Text: content},
-		&openapi.PostMessageOpts{
-			Embed: optional.NewInt32(1),
+		&openapi.MessageApiPostMessageOpts{
+			PostMessageRequest: optional.NewInterface(map[string]interface{}{
+				"content": content,
+				"embed":   true,
+			}),
 		},
 	)
 	return &message, err
@@ -27,7 +29,7 @@ func PostMessage(channelId, content string) (*openapi.Message, error) {
 // GET /channels/:channelId/messages チャンネルのメッセージを取得 order: desc, 時間が新しい方から古い方へ
 func GetChannelMessages(channelId string, limit, offset int) (messages []openapi.Message, hasMore bool, err error) {
 	var res *http.Response
-	messages, res, err = client.MessageApi.GetMessages(auth, channelId, &openapi.GetMessagesOpts{
+	messages, res, err = client.MessageApi.GetMessages(auth, channelId, &openapi.MessageApiGetMessagesOpts{
 		Limit:  optional.NewInt32(int32(limit)),
 		Offset: optional.NewInt32(int32(offset)),
 		Order:  optional.NewString("desc"),

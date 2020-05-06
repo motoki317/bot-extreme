@@ -8,5 +8,5 @@ require (
 	github.com/jmoiron/sqlx v1.2.0
 	github.com/magiconair/properties v1.8.1
 	github.com/motoki317/traq-bot v1.0.2
-	github.com/sapphi-red/go-traq v0.0.0-20200116025632-ceee5b28cfc8
+	github.com/sapphi-red/go-traq v0.0.0-20200506130453-9cd3873174a8
 )

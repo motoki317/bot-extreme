@@ -41,7 +41,7 @@ func reCacheStamps() error {
 		stampsMap[s.Name] = s.Id
 	}
 	for _, u := range users {
-		stampsMap["@"+u.Name] = u.UserId
+		stampsMap["@"+u.Name] = u.Id
 	}
 
 	return nil

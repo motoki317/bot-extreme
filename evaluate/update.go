@@ -26,7 +26,7 @@ type Message struct {
 
 func ParseMessage(message *openapi.Message) *Message {
 	userReactions := make(map[string][]*reaction)
-	for _, s := range message.StampList {
+	for _, s := range message.Stamps {
 		userReactions[s.UserId] = append(userReactions[s.UserId], &reaction{
 			id: s.StampId,
 		})
