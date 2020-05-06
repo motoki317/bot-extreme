@@ -17,9 +17,9 @@ func PostMessage(channelId, content string) (*openapi.Message, error) {
 		auth,
 		channelId,
 		&openapi.MessageApiPostMessageOpts{
-			PostMessageRequest: optional.NewInterface(map[string]interface{}{
-				"content": content,
-				"embed":   true,
+			PostMessageRequest: optional.NewInterface(openapi.PostMessageRequest{
+				Content: content,
+				Embed:   true,
 			}),
 		},
 	)
