@@ -237,8 +237,16 @@ func (p *Processor) handlePvP(game *Game, sender *User, respond func(string), pl
 	// 勝敗が決定した、ゲームを終了する
 	delete(p.games, game.self.ID)
 
+	// respond関数はsenderにタグするので、両方にタグするため
+	var otherName string
+	if sender.ID == game.opponent.ID {
+		otherName = game.self.Name
+	} else {
+		otherName = game.opponent.Name
+	}
+
 	response := []string{
-		"@" + game.opponent.Name,
+		"@" + otherName,
 		"",
 		"",
 		fmt.Sprintf(":@%s: %.2f pts - :@%s: %.2f pts で...", game.self.Name, selfPoints, game.opponent.Name, opponentPoints),
