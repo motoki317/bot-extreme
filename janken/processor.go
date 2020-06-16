@@ -129,12 +129,19 @@ func (p *Processor) handlePickOpponent(game *Game, plainText string, respond fun
 			return
 		}
 
+		// Check validity
 		if mentioned[0].ID == senderUuid {
 			respond(strings.Join([]string{
 				"自分自身と対戦ですか？面白い冗談ですね。",
 				"じゃんけんしたい相手を必ず**一人**指名してください！",
 				"例: `@" + botName + " @kashiwade`",
 			}, "\n"))
+			return
+		}
+
+		// Check bot
+		if strings.HasPrefix(mentioned[0].Name, "BOT_") {
+			respond("Botと対戦ですか？考えましたね、でも残念、それはできません。")
 			return
 		}
 

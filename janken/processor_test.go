@@ -86,3 +86,33 @@ func TestJankenProcessor(t *testing.T) {
 		assert.Equal(t, len(p.games), 0)
 	})
 }
+
+func TestBlockBot(t *testing.T) {
+	p := NewProcessor(EmptyRepository{})
+
+	t.Run("block bot", func(t *testing.T) {
+		sender := &User{
+			Name: "toki",
+			ID:   "this_is_totally_a_uuid",
+		}
+		opponent := &User{
+			Name: "BOT_toki_test",
+			ID:   "b675855f-aba0-40e8-b66c-b94cdabf5479",
+		}
+		respond := func(s string) {
+			t.Log("Got response from processor: " + s)
+		}
+
+		err := p.handle(sender, "@BOT_extreme じゃんけんしよう", []*User{}, respond)
+		assert.Equal(t, err, nil)
+		assert.Equal(t, len(p.games), 1)
+
+		err = p.handle(sender, "@BOT_extreme @xxpoxx", []*User{opponent}, respond)
+		assert.Equal(t, err, nil)
+		assert.Equal(t, len(p.games), 1)
+
+		err = p.handle(sender, "@BOT_extreme やっぱりいい", []*User{}, respond)
+		assert.Equal(t, err, nil)
+		assert.Equal(t, len(p.games), 0)
+	})
+}
