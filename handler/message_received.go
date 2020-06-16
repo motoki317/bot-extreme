@@ -24,6 +24,11 @@ func MessageReceived(repo repository.Repository) func(payload *bot.MessageCreate
 	return func(payload *bot.MessageCreatedPayload) {
 		log.Println(fmt.Sprintf("[%s]: %s", payload.Message.User.DisplayName, payload.Message.PlainText))
 
+		// Botからのメッセージは処理しない
+		if payload.Message.User.Bot {
+			return
+		}
+
 		// メンションされたときのみコマンドを処理する
 		if !isMentioned(payload) {
 			return
