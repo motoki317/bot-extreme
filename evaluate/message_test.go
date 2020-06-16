@@ -123,6 +123,14 @@ func TestMessagePoint(t *testing.T) {
 			},
 			wantErr: false,
 		},
+		{
+			name: "with some message",
+			args: args{
+				repo:    EmptyRepository{},
+				content: "@BOT_extreme :ranpuro_5::oisu-4yoko::ranpuro_1::ranpuro_3::ranpuro_4::ranpuro_2::ranpuro_4::ranpuro_2:",
+			},
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

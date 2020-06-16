@@ -57,6 +57,10 @@ func init() {
 		"conga-inv",
 		"marquee-inv",
 		"rainbow",
+		"ascension",
+		"shake",
+		"party",
+		"attract",
 	}
 
 	sizeEffects = make(map[string]bool)
