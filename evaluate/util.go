@@ -27,7 +27,7 @@ func reCacheStamps() error {
 		return err
 	}
 
-	users, err := api.GetUsers()
+	users, err := api.GetUsers(false)
 	if err != nil {
 		return err
 	}

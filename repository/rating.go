@@ -9,6 +9,8 @@ type RatingRepository interface {
 	// 該当ユーザーのRatingを取得します。
 	// 存在しない場合、nilを返します。
 	GetRating(ID string) (*Rating, error)
+	// すべてのレーティングを返します。
+	GetAllRatings() ([]*Rating, error)
 	// Ratingを更新します。
 	// 存在しない場合は新規に作成、
 	// 既に存在する場合は更新します。

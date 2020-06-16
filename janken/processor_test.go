@@ -6,7 +6,18 @@ import (
 	"testing"
 )
 
-type EmptyRepository struct{}
+type EmptyRepository struct {
+	// ユーザーレーティング
+	repository.RatingRepository
+	// スタンプエフェクトのポイント
+	repository.EffectPointRepository
+	// スタンプ同士の案系
+	repository.StampRelationRepository
+	// スタンプ単体のポイント
+	repository.StampRepository
+	// 処理したチャンネルの保存用
+	repository.SeenChannelRepository
+}
 
 func (m EmptyRepository) Lock() {}
 
@@ -15,79 +26,6 @@ func (m EmptyRepository) Unlock() {}
 func (m EmptyRepository) ChannelLock() {}
 
 func (m EmptyRepository) ChannelUnlock() {}
-
-func (m EmptyRepository) GetRating(ID string) (*repository.Rating, error) {
-	return &repository.Rating{
-		ID:     ID,
-		Rating: 1500,
-	}, nil
-}
-
-func (m EmptyRepository) UpdateRating(*repository.Rating) error {
-	return nil
-}
-
-func (m EmptyRepository) GetEffectPoint(name string) (*repository.EffectPoint, error) {
-	return &repository.EffectPoint{
-		Name:  name,
-		Point: 1,
-	}, nil
-}
-
-func (m EmptyRepository) GetAllEffectPoints() ([]*repository.EffectPoint, error) {
-	return []*repository.EffectPoint{}, nil
-}
-
-func (m EmptyRepository) UpdateEffectPoint(point *repository.EffectPoint) error {
-	return nil
-}
-
-func (m EmptyRepository) GetStampRelation(from, to string) (*repository.StampRelation, error) {
-	return &repository.StampRelation{
-		IDFrom: from,
-		IDTo:   to,
-		Point:  1,
-	}, nil
-}
-
-func (m EmptyRepository) GetStampRelations(id string) ([]*repository.StampRelation, error) {
-	return []*repository.StampRelation{}, nil
-}
-
-func (m EmptyRepository) UpdateStampRelation(relation *repository.StampRelation) error {
-	return nil
-}
-
-func (m EmptyRepository) UpdateStampRelations(relations []*repository.StampRelation) error {
-	return nil
-}
-
-func (m EmptyRepository) DeleteStampRelations(threshold float64) error {
-	return nil
-}
-
-func (m EmptyRepository) UpdateAllEffectPoints(points []*repository.EffectPoint) error {
-	return nil
-}
-
-func (m EmptyRepository) GetStamp(ID string) (*repository.Stamp, error) {
-	return &repository.Stamp{
-		ID:   ID,
-		Used: 5,
-	}, nil
-}
-
-func (m EmptyRepository) UpdateStamp(stamp *repository.Stamp) error {
-	return nil
-}
-
-func (m EmptyRepository) GetSeenChannel(ID string) (*repository.SeenChannel, error) {
-	return nil, nil
-}
-
-func (m EmptyRepository) UpdateSeenChannel(channel *repository.SeenChannel) error {
-	return nil
-}
 
 func TestJankenProcessor(t *testing.T) {
 	p := NewProcessor(EmptyRepository{})

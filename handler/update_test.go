@@ -59,6 +59,17 @@ func (m *MockRepository) GetRating(ID string) (*repository.Rating, error) {
 	}
 }
 
+func (m *MockRepository) GetAllRatings() ([]*repository.Rating, error) {
+	ret := make([]*repository.Rating, 0)
+	for id, r := range m.rating {
+		ret = append(ret, &repository.Rating{
+			ID:     id,
+			Rating: r,
+		})
+	}
+	return ret, nil
+}
+
 func (m *MockRepository) UpdateRating(r *repository.Rating) error {
 	m.rating[r.ID] = r.Rating
 	return nil

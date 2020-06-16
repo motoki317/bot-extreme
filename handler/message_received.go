@@ -8,6 +8,7 @@ import (
 	bot "github.com/motoki317/traq-bot"
 	"log"
 	"os"
+	"regexp"
 )
 
 var (
@@ -23,6 +24,17 @@ func MessageReceived(repo repository.Repository) func(payload *bot.MessageCreate
 	return func(payload *bot.MessageCreatedPayload) {
 		log.Println(fmt.Sprintf("[%s]: %s", payload.Message.User.DisplayName, payload.Message.PlainText))
 
+		// メンションされたときのみコマンドを処理する
+		if !isMentioned(payload) {
+			return
+		}
+
+		// レーティング表示
+		if regexp.MustCompile("\\s*ランキング\\s*").MatchString(payload.Message.PlainText) {
+			handleShowRating(repo, payload)
+			return
+		}
+
 		handleJanken(processor, payload)
 
 		// より古いメッセージを処理しスタンプのレーティングを更新する
@@ -36,20 +48,18 @@ func MessageReceived(repo repository.Repository) func(payload *bot.MessageCreate
 }
 
 func handleJanken(processor *janken.Processor, payload *bot.MessageCreatedPayload) {
-	if isMentioned(payload) {
-		sender := &janken.User{
-			Name: payload.Message.User.Name,
-			ID:   payload.Message.User.ID,
-		}
-		plainText := payload.Message.PlainText
-
-		processor.Handle(sender, plainText, getMentionedUsers(payload), func(content string) {
-			err := respond(payload, content)
-			if err != nil {
-				log.Println(err)
-			}
-		})
+	sender := &janken.User{
+		Name: payload.Message.User.Name,
+		ID:   payload.Message.User.ID,
 	}
+	plainText := payload.Message.PlainText
+
+	processor.Handle(sender, plainText, getMentionedUsers(payload), func(content string) {
+		err := respond(payload, content)
+		if err != nil {
+			log.Println(err)
+		}
+	})
 }
 
 // メッセージ内でBotがメンションされたかを判定
