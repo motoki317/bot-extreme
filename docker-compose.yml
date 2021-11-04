@@ -5,17 +5,13 @@ services:
     build: ./
     restart: always
     environment:
-      PORT: 80
       BOT_NAME:
       BOT_UUID:
-      VERIFICATION_TOKEN:
       ACCESS_TOKEN:
       MARIADB_HOSTNAME: mysql
       MARIADB_DATABASE: extreme
       MARIADB_USERNAME: root
       MARIADB_PASSWORD: password
-    ports:
-      - 80:80
     depends_on:
       - mysql
   mysql:

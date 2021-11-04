@@ -2,49 +2,51 @@ package handler
 
 import (
 	"fmt"
-	"github.com/motoki317/bot-extreme/api"
-	"github.com/motoki317/bot-extreme/janken"
-	"github.com/motoki317/bot-extreme/repository"
-	bot "github.com/motoki317/traq-bot"
 	"log"
 	"os"
 	"regexp"
+
+	"github.com/traPtitech/traq-ws-bot/payload"
+
+	"github.com/motoki317/bot-extreme/api"
+	"github.com/motoki317/bot-extreme/janken"
+	"github.com/motoki317/bot-extreme/repository"
 )
 
 var (
 	botUuid = os.Getenv("BOT_UUID")
 )
 
-func MessageReceived(repo repository.Repository) func(payload *bot.MessageCreatedPayload) {
+func MessageReceived(repo repository.Repository) func(p *payload.MessageCreated) {
 	processor := janken.NewProcessor(repo)
 	updater := &updater{
 		repo: repo,
 	}
 
-	return func(payload *bot.MessageCreatedPayload) {
-		log.Println(fmt.Sprintf("[%s]: %s", payload.Message.User.DisplayName, payload.Message.PlainText))
+	return func(p *payload.MessageCreated) {
+		log.Println(fmt.Sprintf("[%s]: %s", p.Message.User.DisplayName, p.Message.PlainText))
 
 		// Botからのメッセージは処理しない
-		if payload.Message.User.Bot {
+		if p.Message.User.Bot {
 			return
 		}
 
 		// メンションされたときのみコマンドを処理する
-		if !isMentioned(payload) {
+		if !isMentioned(p) {
 			return
 		}
 
 		// レーティング表示
-		if regexp.MustCompile("\\s*ランキング\\s*").MatchString(payload.Message.PlainText) {
-			handleShowRating(repo, payload)
+		if regexp.MustCompile("\\s*ランキング\\s*").MatchString(p.Message.PlainText) {
+			handleShowRating(repo, p)
 			return
 		}
 
-		handleJanken(processor, payload)
+		handleJanken(processor, p)
 
 		// より古いメッセージを処理しスタンプのレーティングを更新する
 		go func() {
-			err := updater.updateRatings(payload.Message.ChannelID)
+			err := updater.updateRatings(p.Message.ChannelID)
 			if err != nil {
 				log.Println(err)
 			}
@@ -52,15 +54,15 @@ func MessageReceived(repo repository.Repository) func(payload *bot.MessageCreate
 	}
 }
 
-func handleJanken(processor *janken.Processor, payload *bot.MessageCreatedPayload) {
+func handleJanken(processor *janken.Processor, p *payload.MessageCreated) {
 	sender := &janken.User{
-		Name: payload.Message.User.Name,
-		ID:   payload.Message.User.ID,
+		Name: p.Message.User.Name,
+		ID:   p.Message.User.ID,
 	}
-	plainText := payload.Message.PlainText
+	plainText := p.Message.PlainText
 
-	processor.Handle(sender, plainText, getMentionedUsers(payload), func(content string) {
-		err := respond(payload, content)
+	processor.Handle(sender, plainText, getMentionedUsers(p), func(content string) {
+		err := respond(p, content)
 		if err != nil {
 			log.Println(err)
 		}
@@ -68,8 +70,8 @@ func handleJanken(processor *janken.Processor, payload *bot.MessageCreatedPayloa
 }
 
 // メッセージ内でBotがメンションされたかを判定
-func isMentioned(payload *bot.MessageCreatedPayload) bool {
-	for _, e := range payload.Message.Embedded {
+func isMentioned(p *payload.MessageCreated) bool {
+	for _, e := range p.Message.Embedded {
 		if e.Type == "user" && e.ID == botUuid {
 			return true
 		}
@@ -78,8 +80,8 @@ func isMentioned(payload *bot.MessageCreatedPayload) bool {
 }
 
 // Bot自身を除くメンションされたユーザー一覧を取得
-func getMentionedUsers(payload *bot.MessageCreatedPayload) (users []*janken.User) {
-	for _, e := range payload.Message.Embedded {
+func getMentionedUsers(p *payload.MessageCreated) (users []*janken.User) {
+	for _, e := range p.Message.Embedded {
 		if e.Type == "user" && e.ID != botUuid {
 			users = append(users, &janken.User{
 				// e.Raw example: "@takashi_trap"
@@ -92,7 +94,7 @@ func getMentionedUsers(payload *bot.MessageCreatedPayload) (users []*janken.User
 }
 
 // @sender {content}のように送られたチャンネルへ返信する
-func respond(payload *bot.MessageCreatedPayload, content string) (err error) {
-	_, err = api.PostMessage(payload.Message.ChannelID, fmt.Sprintf("@%s %s", payload.Message.User.Name, content))
+func respond(p *payload.MessageCreated, content string) (err error) {
+	_, err = api.PostMessage(p.Message.ChannelID, fmt.Sprintf("@%s %s", p.Message.User.Name, content))
 	return
 }

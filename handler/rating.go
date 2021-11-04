@@ -2,12 +2,14 @@ package handler
 
 import (
 	"fmt"
-	"github.com/motoki317/bot-extreme/api"
-	"github.com/motoki317/bot-extreme/repository"
-	bot "github.com/motoki317/traq-bot"
 	"log"
 	"sort"
 	"strings"
+
+	"github.com/traPtitech/traq-ws-bot/payload"
+
+	"github.com/motoki317/bot-extreme/api"
+	"github.com/motoki317/bot-extreme/repository"
 )
 
 func min(a, b int) int {
@@ -18,10 +20,10 @@ func min(a, b int) int {
 	}
 }
 
-func handleShowRating(repo repository.Repository, payload *bot.MessageCreatedPayload) {
+func handleShowRating(repo repository.Repository, p *payload.MessageCreated) {
 	ratings, err := repo.GetAllRatings()
 	if err != nil {
-		err = respond(payload, "レーティング一覧を取得中にエラーが発生しました...")
+		err = respond(p, "レーティング一覧を取得中にエラーが発生しました...")
 		if err != nil {
 			log.Println(err)
 		}
@@ -29,7 +31,7 @@ func handleShowRating(repo repository.Repository, payload *bot.MessageCreatedPay
 	}
 
 	if len(ratings) == 0 {
-		err = respond(payload, "一つもレーティングが存在しないようです。")
+		err = respond(p, "一つもレーティングが存在しないようです。")
 		if err != nil {
 			log.Println(err)
 		}
@@ -38,7 +40,7 @@ func handleShowRating(repo repository.Repository, payload *bot.MessageCreatedPay
 
 	users, err := api.GetUsers(true)
 	if err != nil {
-		err = respond(payload, "API通信中にエラーが発生しました...")
+		err = respond(p, "API通信中にエラーが発生しました...")
 		return
 	}
 
@@ -65,7 +67,7 @@ func handleShowRating(repo repository.Repository, payload *bot.MessageCreatedPay
 		message = append(message, fmt.Sprintf("| %v. | :@%s: | %.2f |", i+1, name, r.Rating))
 	}
 
-	err = respond(payload, strings.Join(message, "\n"))
+	err = respond(p, strings.Join(message, "\n"))
 	if err != nil {
 		log.Println(err)
 	}

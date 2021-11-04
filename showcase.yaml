@@ -1,12 +1,6 @@
 type: "runtime"
-
-# script executed on startup (default: null)
 startup: |
   go mod download
   go build -o main
-
 use_mariadb: true
-
 entrypoint: "./main"
-
-http_proxy: 3000

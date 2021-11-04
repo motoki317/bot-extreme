@@ -2,16 +2,19 @@ package main
 
 import (
 	"fmt"
-	_ "github.com/go-sql-driver/mysql"
-	"github.com/jmoiron/sqlx"
-	"github.com/motoki317/bot-extreme/evaluate"
-	"github.com/motoki317/bot-extreme/handler"
-	"github.com/motoki317/bot-extreme/repository"
-	bot "github.com/motoki317/traq-bot"
 	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
+
+	_ "github.com/go-sql-driver/mysql"
+	"github.com/jmoiron/sqlx"
+	bot "github.com/traPtitech/traq-ws-bot"
+	"github.com/traPtitech/traq-ws-bot/payload"
+
+	"github.com/motoki317/bot-extreme/evaluate"
+	"github.com/motoki317/bot-extreme/handler"
+	"github.com/motoki317/bot-extreme/repository"
 )
 
 const (
@@ -19,15 +22,11 @@ const (
 )
 
 var (
-	port = os.Getenv("PORT")
+	accessToken = os.Getenv("ACCESS_TOKEN")
 )
 
 func main() {
 	log.SetFlags(log.LstdFlags)
-	if port == "" {
-		log.Println("Setting default port to 80")
-		port = "80"
-	}
 
 	// connect to db
 	db := sqlx.MustConnect("mysql", fmt.Sprintf(
@@ -72,15 +71,17 @@ func main() {
 	repo := repository.NewRepositoryImpl(db)
 
 	// traq bot handlers
-	handlers := bot.EventHandlers{}
-	handlers.SetMessageCreatedHandler(handler.MessageReceived(repo))
-	handlers.SetStampCreatedHandler(func(payload *bot.StampCreatedPayload) {
-		evaluate.AddStamp(payload.Name, payload.ID)
+	b, err := bot.NewBot(&bot.Options{
+		AccessToken:   accessToken,
+		AutoReconnect: true,
+	})
+	b.OnMessageCreated(handler.MessageReceived(repo))
+	b.OnStampCreated(func(p *payload.StampCreated) {
+		evaluate.AddStamp(p.Name, p.ID)
 	})
 
-	// traq bot server
-	vt := os.Getenv("VERIFICATION_TOKEN")
-	server := bot.NewBotServer(vt, handlers)
-	log.Println("Listening on port " + port + "...")
-	log.Fatal(server.ListenAndServe(":" + port))
+	// Start (blocks on success)
+	if err := b.Start(); err != nil {
+		panic(err)
+	}
 }
