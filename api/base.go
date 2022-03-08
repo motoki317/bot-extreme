@@ -2,18 +2,19 @@ package api
 
 import (
 	"context"
-	"github.com/sapphi-red/go-traq"
 	"os"
+
+	"github.com/sapphi-red/go-traq"
 )
 
 var (
 	accessToken string
 	auth        context.Context
-	client      *openapi.APIClient
+	client      *traq.APIClient
 )
 
 func init() {
 	accessToken = os.Getenv("ACCESS_TOKEN")
-	auth = context.WithValue(context.Background(), openapi.ContextAccessToken, accessToken)
-	client = openapi.NewAPIClient(openapi.NewConfiguration())
+	auth = context.WithValue(context.Background(), traq.ContextAccessToken, accessToken)
+	client = traq.NewAPIClient(traq.NewConfiguration())
 }

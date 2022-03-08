@@ -72,8 +72,7 @@ func main() {
 
 	// traq bot handlers
 	b, err := bot.NewBot(&bot.Options{
-		AccessToken:   accessToken,
-		AutoReconnect: true,
+		AccessToken: accessToken,
 	})
 	b.OnMessageCreated(handler.MessageReceived(repo))
 	b.OnStampCreated(func(p *payload.StampCreated) {
