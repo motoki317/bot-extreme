@@ -1,12 +1,14 @@
 package evaluate
 
 import (
-	ast "github.com/magiconair/properties/assert"
-	"github.com/motoki317/bot-extreme/repository"
 	"math"
 	"sync"
 	"testing"
 	"time"
+
+	ast "github.com/magiconair/properties/assert"
+
+	"github.com/motoki317/bot-extreme/repository"
 )
 
 // レーティング、スタンプの使用回数、エフェクト、関係、最後に見たチャンネルを擬似的に保存するrepository
@@ -61,6 +63,17 @@ func (m *MockRepository) GetRating(ID string) (*repository.Rating, error) {
 func (m *MockRepository) UpdateRating(r *repository.Rating) error {
 	m.rating[r.ID] = r.Rating
 	return nil
+}
+
+func (m *MockRepository) GetAllRatings() ([]*repository.Rating, error) {
+	ret := make([]*repository.Rating, 0, len(m.rating))
+	for id, rating := range m.rating {
+		ret = append(ret, &repository.Rating{
+			ID:     id,
+			Rating: rating,
+		})
+	}
+	return ret, nil
 }
 
 func (m *MockRepository) GetEffectPoint(name string) (*repository.EffectPoint, error) {

@@ -1,8 +1,9 @@
 package evaluate
 
 import (
-	"github.com/motoki317/bot-extreme/repository"
 	"testing"
+
+	"github.com/motoki317/bot-extreme/repository"
 )
 
 // なにもないrepository
@@ -25,6 +26,10 @@ func (m EmptyRepository) GetRating(ID string) (*repository.Rating, error) {
 
 func (m EmptyRepository) UpdateRating(*repository.Rating) error {
 	return nil
+}
+
+func (m EmptyRepository) GetAllRatings() ([]*repository.Rating, error) {
+	return nil, nil
 }
 
 func (m EmptyRepository) GetEffectPoint(name string) (*repository.EffectPoint, error) {
