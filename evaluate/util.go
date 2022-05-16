@@ -1,10 +1,11 @@
 package evaluate
 
 import (
-	"github.com/motoki317/bot-extreme/api"
 	"log"
 	"regexp"
 	"strings"
+
+	"github.com/motoki317/bot-extreme/api"
 )
 
 func containsUnknownStamp(stamps []*stamp) bool {
@@ -17,6 +18,19 @@ func containsUnknownStamp(stamps []*stamp) bool {
 		}
 	}
 	return false
+}
+
+func filterUnknownStamp(stamps []*stamp) []*stamp {
+	stampsMapLock.RLock()
+	defer stampsMapLock.RUnlock()
+	ret := make([]*stamp, 0, len(stamps))
+	for _, s := range stamps {
+		if stampID, ok := stampsMap[s.name]; ok {
+			s.id = stampID
+			ret = append(ret, s)
+		}
+	}
+	return ret
 }
 
 func reCacheStamps() error {
@@ -63,7 +77,7 @@ func getMessageStamps(content string) []*stamp {
 	return stamps
 }
 
-// スタンプをパースします。存在するスタンプであるかどうか、またエフェクトの有効性についてもvalidateします
+// スタンプをパースします。エフェクトの有効性についてvalidateします。
 // e.g. "thonk_spin.ex-large.rotate.parrot" -> "thonk_spin", []string{"ex-large", "rotate", "parrot"}
 func parseStamp(stampMessage string) *stamp {
 	matches := strings.Split(stampMessage, ".")
@@ -72,23 +86,7 @@ func parseStamp(stampMessage string) *stamp {
 		name: matches[0],
 	}
 
-	if len(stampsMap) == 0 {
-		err := reCacheStamps()
-		if err != nil {
-			log.Println(err)
-			return nil
-		}
-	}
-
-	stampsMapLock.RLock()
-	defer stampsMapLock.RUnlock()
-
-	// 存在するスタンプかチェック
-	if id, ok := stampsMap[ret.name]; ok {
-		ret.id = id
-	} else {
-		return nil
-	}
+	// NOTE: ここではまだスタンプの存在はチェックしない
 
 	for _, eff := range matches[1:] {
 		if _, ok := sizeEffects[eff]; ok {

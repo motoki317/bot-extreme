@@ -1,10 +1,12 @@
 package evaluate
 
 import (
-	"github.com/motoki317/bot-extreme/repository"
-	openapi "github.com/sapphi-red/go-traq"
 	"math"
 	"sort"
+
+	openapi "github.com/sapphi-red/go-traq"
+
+	"github.com/motoki317/bot-extreme/repository"
 )
 
 // メッセージを取得し、スタンプの評価などを変更します
@@ -38,7 +40,8 @@ func ParseMessage(message *openapi.Message) *Message {
 	}
 
 	return &Message{
-		MessageStamps: getMessageStamps(message.Content),
+		// 本当は存在するスタンプを再fetchした方が良いがあえてしない
+		MessageStamps: filterUnknownStamp(getMessageStamps(message.Content)),
 		UserReactions: users,
 	}
 }

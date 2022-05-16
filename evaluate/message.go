@@ -1,9 +1,12 @@
 package evaluate
 
 import (
-	"github.com/motoki317/bot-extreme/repository"
+	"fmt"
+	"log"
 	"math"
 	"sync"
+
+	"github.com/motoki317/bot-extreme/repository"
 )
 
 var (
@@ -22,6 +25,10 @@ type stamp struct {
 	id          string
 	sizeEffect  string
 	moveEffects []string
+}
+
+func (s *stamp) String() string {
+	return fmt.Sprintf("stamp{%v, id: %v, size effect: %v, move effects: %v}", s.name, s.id, s.sizeEffect, s.moveEffects)
 }
 
 type messageEvaluator struct {
@@ -93,20 +100,13 @@ func MessagePoint(repo repository.Repository, content string) (pts float64, err 
 	}
 
 	// check non existent stamps
-	filteredStamps := make([]*stamp, 0)
-	stampsMapLock.RLock()
-	for _, s := range stamps {
-		if stampId, ok := stampsMap[s.name]; ok {
-			s.id = stampId
-			filteredStamps = append(filteredStamps, s)
-		}
-	}
-	stampsMapLock.RUnlock()
+	stamps = filterUnknownStamp(stamps)
 
 	eval := &messageEvaluator{
 		repo:   repo,
-		stamps: filteredStamps,
+		stamps: stamps,
 	}
+	log.Printf("evaluator: stamps %v\n", stamps)
 
 	return eval.calculatePoints()
 }
